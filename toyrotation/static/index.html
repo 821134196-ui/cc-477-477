@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>儿童牙科候诊玩具消毒与轮换系统</title>
+<link rel="stylesheet" href="/app.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>
+    </span>
+    <div>
+      <h1>候诊玩具消毒与轮换</h1>
+      <p class="subtitle">周转登记 · 材质分组消毒 · 干燥计时 · 隔离复核</p>
+    </div>
+  </div>
+  <div class="role-box">
+    <span class="role-label">当前角色</span>
+    <div class="role-switch" id="roleSwitch">
+      <button data-role="staff" class="role-btn">清洁员工</button>
+      <button data-role="nurse" class="role-btn">护士长</button>
+      <button data-role="front_desk" class="role-btn">前台</button>
+    </div>
+    <span class="clock" id="clock"></span>
+  </div>
+</header>
+
+<nav class="tabs" id="tabs">
+  <button data-tab="waiting" class="tab active">候诊区</button>
+  <button data-tab="deploy" class="tab">区域投放表</button>
+  <button data-tab="library" class="tab">玩具库</button>
+  <button data-tab="recycle" class="tab">回收扫描</button>
+  <button data-tab="batches" class="tab">消毒组批</button>
+  <button data-tab="drying" class="tab">干燥计时</button>
+  <button data-tab="damage" class="tab">破损处理</button>
+  <button data-tab="quarantine" class="tab">隔离复核</button>
+  <button data-tab="trace" class="tab">追溯与异常</button>
+</nav>
+
+<main class="content">
+  <!-- 候诊区 -->
+  <section id="tab-waiting" class="panel active">
+    <div class="panel-head">
+      <h2>候诊区视图</h2>
+      <p class="hint">仅显示可用数量与轮换时间；具体玩具明细请在玩具库查看。</p>
+    </div>
+    <div class="zone-cards" id="zoneCards"></div>
+  </section>
+
+  <!-- 区域投放表 -->
+  <section id="tab-deploy" class="panel">
+    <div class="panel-head"><h2>区域投放表</h2>
+      <p class="hint">从清洁库投放到候诊区；同一玩具并发投放仅一人成功。</p></div>
+    <form class="form-inline" id="deployForm">
+      <label>玩具编号
+        <select name="toy_id" id="deployToy"></select></label>
+      <label>候诊区
+        <select name="zone_id" id="deployZone"></select></label>
+      <button class="btn btn-primary" type="submit">投放</button>
+      <button class="btn" type="button" id="deployConcurrentBtn" title="模拟两名员工同时点击投放同一玩具">模拟双人并发投放</button>
+    </form>
+    <div id="deployTable"></div>
+  </section>
+
+  <!-- 玩具库 -->
+  <section id="tab-library" class="panel">
+    <div class="panel-head"><h2>玩具库</h2>
+      <p class="hint">按区域筛选；小图标配编号，悬停查看材质与清洁方式。</p></div>
+    <div class="filter-bar" id="areaFilter"></div>
+    <div class="toy-grid" id="toyGrid"></div>
+  </section>
+
+  <!-- 回收扫描 -->
+  <section id="tab-recycle" class="panel">
+    <div class="panel-head"><h2>回收扫描</h2>
+      <p class="hint">玩具从候诊区扫入回收箱；错区扫描会自动登记。</p></div>
+    <form class="form-inline" id="recycleForm">
+      <label>玩具编号 <input name="toy_id" id="recycleToy" list="toyDatalist" placeholder="如 T-001" required></label>
+      <label>实际发现区域（可选，用于错区判定）
+        <select name="found_zone_id" id="recycleZone"><option value="">— 与登记一致 —</option></select></label>
+      <button class="btn btn-primary" type="submit">扫描回收</button>
+    </form>
+    <datalist id="toyDatalist"></datalist>
+    <div class="two-col">
+      <div><h3>回收箱（待清洁）</h3><div id="binList" class="stack"></div></div>
+      <div>
+        <h3>回收漏扫登记</h3>
+        <form class="form-inline" id="missedForm">
+          <input name="toy_id" list="toyDatalist" placeholder="漏扫玩具编号" required>
+          <button class="btn btn-coral" type="submit">登记漏扫</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- 消毒组批 -->
+  <section id="tab-batches" class="panel">
+    <div class="panel-head"><h2>消毒组批</h2>
+      <p class="hint">批次按材质分组，同材质同清洁方式；设备回执随批次留存。</p></div>
+    <form class="form-inline" id="batchForm">
+      <label>材质分组 <select name="material" id="batchMaterial"></select></label>
+      <button class="btn btn-primary" type="submit">新建批次</button>
+    </form>
+    <div id="batchList" class="batch-list"></div>
+  </section>
+
+  <!-- 干燥计时 -->
+  <section id="tab-drying" class="panel">
+    <div class="panel-head"><h2>干燥计时</h2>
+      <p class="hint">消毒后必须经过该材质规定干燥时长，到时由进程内任务自动回库。</p></div>
+    <div id="dryingList" class="drying-list"></div>
+  </section>
+
+  <!-- 破损处理 -->
+  <section id="tab-damage" class="panel">
+    <div class="panel-head"><h2>破损处理</h2>
+      <p class="hint">发现锐边、掉件或污染风险立即隔离，照片存本地目录。</p></div>
+    <form class="form-card" id="damageForm">
+      <div class="form-row">
+        <label>玩具编号 <input name="toy_id" list="toyDatalist" placeholder="如 T-018" required></label>
+        <label>破损类型
+          <select name="kind" id="damageKind"></select></label>
+      </div>
+      <label>情况说明 <input name="note" placeholder="如：拼图板边缘毛刺，可能划伤"></label>
+      <label>破损照片（保存到本地 data/photos）
+        <input type="file" name="photo" id="damagePhoto" accept="image/*"></label>
+      <div class="form-actions"><button class="btn btn-coral" type="submit">立即隔离并登记</button></div>
+    </form>
+    <h3>破损记录</h3>
+    <div id="damageList" class="stack"></div>
+  </section>
+
+  <!-- 隔离复核 -->
+  <section id="tab-quarantine" class="panel">
+    <div class="panel-head"><h2>隔离复核</h2>
+      <p class="hint">锁形标记为隔离中；普通清洁不能解除隔离，仅护士长复核后可解除。</p></div>
+    <div id="quarantineList" class="quarantine-list"></div>
+  </section>
+
+  <!-- 追溯 -->
+  <section id="tab-trace" class="panel">
+    <div class="panel-head"><h2>周转追溯与异常登记</h2>
+      <p class="hint">SQLite 记录全部周转事件；支持按玩具或批次追溯。</p></div>
+    <form class="form-inline" id="traceForm">
+      <label>玩具编号 <input name="toy_id" list="toyDatalist" placeholder="可选"></label>
+      <label>批次号 <input name="batch_id" placeholder="可选，如 B-20260927-001"></label>
+      <button class="btn" type="submit">查询</button>
+      <button class="btn btn-ghost" type="button" id="traceReset">重置</button>
+    </form>
+    <div class="two-col">
+      <div><h3>周转事件</h3><div id="eventList" class="timeline"></div></div>
+      <div><h3>异常登记</h3><div id="incidentList" class="incident-list"></div></div>
+    </div>
+  </section>
+</main>
+
+<div id="toast" class="toast" role="status"></div>
+<script src="/app.js"></script>
+</body>
+</html>
